@@ -1,133 +1,97 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { motion } from 'motion/react';
-import { GraduationCap, Github } from 'lucide-react';
-import axios from 'axios';
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { motion } from "framer-motion";
+import API from "../../api/axios";
+import { getCurrentUser } from "../../services/authService";
 
 export function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: any) => {
     e.preventDefault();
 
-    const newErrors: { email?: string; password?: string } = {};
-
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
     try {
-      setLoading(true);
+      const res = await API.post("/auth/login", { email, password });
 
-      const response = await axios.post(
-        'http://localhost:8080/api/auth/login',
-        {
-          email,
-          password,
-        }
-      );
+      localStorage.setItem("token", res.data.token);
 
-      console.log('Login Success:', response.data);
+      const user = await getCurrentUser();
+      localStorage.setItem("user", JSON.stringify(user));
 
-      // Save JWT token
-      localStorage.setItem('token', response.data.token);
-
-      navigate('/app');
-
-    } catch (error: any) {
-      console.error(error);
-
-      if (error.response?.status === 401) {
-        alert('Invalid email or password');
-      } else if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else {
-        alert('Login failed. Try again.');
-      }
-    } finally {
-      setLoading(false);
+      navigate("/app");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Login failed");
     }
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
-    navigate('/app');
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* LEFT SIDE */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-12 items-center justify-center relative overflow-hidden">
-        <motion.div className="text-white max-w-lg">
-          <GraduationCap className="w-20 h-20 mb-6" />
-          <h1 className="text-5xl font-bold mb-6">Welcome to SkillBridge</h1>
-          <p className="text-xl text-blue-100 mb-8">
-            Continue your learning journey with AI-powered guidance.
-          </p>
+    <div className="h-screen flex bg-gradient-to-br from-indigo-50 via-white to-purple-100">
+
+      {/* LEFT PANEL */}
+      <div className="hidden md:flex w-1/2 items-center justify-center relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600"></div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative text-white text-center px-10"
+        >
+          <h1 className="text-5xl font-bold mb-4">SkillBridge 🚀</h1>
+          <p className="opacity-90">AI-powered career growth</p>
         </motion.div>
       </div>
 
-      {/* RIGHT SIDE */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
-        <motion.div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Welcome back!
-            </h2>
-          </div>
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex items-center justify-center">
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <Input
-              type="email"
-              label="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={errors.email}
-            />
+        <motion.form
+          onSubmit={handleLogin}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-10 rounded-3xl shadow-xl w-[350px] space-y-5"
+        >
+          <h2 className="text-3xl font-bold text-center text-gray-800">
+            Welcome Back 👋
+          </h2>
 
-            <Input
-              type="password"
-              label="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={errors.password}
-            />
+          {/* EMAIL */}
+          <input
+            placeholder="Email"
+            className="w-full p-3 rounded-xl border bg-white text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 outline-none"
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
+          {/* PASSWORD */}
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 rounded-xl border bg-white text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 outline-none"
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <div className="mt-6 text-center text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
-            <button
-              onClick={() => navigate('/signup')}
-              className="text-blue-600 font-semibold"
+          {/* BUTTON */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-xl"
+          >
+            Login
+          </motion.button>
+
+          <p className="text-sm text-center text-gray-500">
+            Don’t have an account?{" "}
+            <span
+              onClick={() => navigate("/signup")}
+              className="text-indigo-600 font-semibold cursor-pointer hover:underline"
             >
-              Sign up
-            </button>
-          </div>
-        </motion.div>
+              Signup
+            </span>
+          </p>
+        </motion.form>
+
       </div>
     </div>
   );

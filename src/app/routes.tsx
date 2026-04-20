@@ -1,5 +1,8 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
+
 import { RootLayout } from "./components/RootLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -32,22 +35,30 @@ export const router = createBrowserRouter([
     path: "/app",
     element: <RootLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: "role-selection", element: <RoleSelectionPage /> },
-      { path: "assessment/:roleId", element: <AssessmentPage /> },
-      { path: "performance-analysis/:roleId", element: <PerformanceAnalysisPage /> },
-      { path: "learning-roadmap/:roleId", element: <LearningRoadmapPage /> },
-      { path: "progress-tracking/:roleId", element: <ProgressTrackingPage /> },
-      { path: "re-assessment/:roleId", element: <ReAssessmentPage /> },
-      { path: "completion/:roleId", element: <CompletionPage /> },
-      { path: "company-selection", element: <CompanySelectionPage /> },
-      { path: "resources/:companyId", element: <ResourcesPage /> },
-      { path: "mock-test/:companyId", element: <MockTestPage /> },
-      { path: "company-analysis/:companyId", element: <CompanyAnalysisPage /> },
-      { path: "role-recommendation", element: <RoleRecommendationPage /> },
-      { path: "profile", element: <ProfilePage /> },
-      { path: "settings", element: <SettingsPage /> },
-      { path: "notifications", element: <NotificationsPage /> },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { index: true, element: <DashboardPage /> },
+
+          { path: "role-selection", element: <RoleSelectionPage /> },
+          { path: "assessment/:roleId", element: <AssessmentPage /> },
+          { path: "performance-analysis/:roleId", element: <PerformanceAnalysisPage /> },
+          { path: "learning-roadmap/:roleId", element: <LearningRoadmapPage /> },
+          { path: "progress-tracking/:roleId", element: <ProgressTrackingPage /> },
+          { path: "re-assessment/:roleId", element: <ReAssessmentPage /> },
+          { path: "completion/:roleId", element: <CompletionPage /> },
+
+          { path: "company-selection", element: <CompanySelectionPage /> },
+          { path: "resources/:companyId", element: <ResourcesPage /> },
+          { path: "mock-test/:companyId", element: <MockTestPage /> },
+          { path: "company-analysis/:companyId", element: <CompanyAnalysisPage /> },
+
+          { path: "role-recommendation", element: <RoleRecommendationPage /> },
+          { path: "profile", element: <ProfilePage /> },
+          { path: "settings", element: <SettingsPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
+        ],
+      },
     ],
   },
 ]);

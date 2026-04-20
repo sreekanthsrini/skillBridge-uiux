@@ -1,287 +1,148 @@
-import { useNavigate } from 'react-router';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
-import { motion } from 'motion/react';
-import { 
-  Briefcase, 
-  Building2, 
-  TrendingUp, 
-  Target,
-  BookOpen,
-  Clock,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles
-} from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const progressData = [
-  { week: 'Week 1', score: 45 },
-  { week: 'Week 2', score: 52 },
-  { week: 'Week 3', score: 68 },
-  { week: 'Week 4', score: 75 },
-  { week: 'Week 5', score: 82 },
-  { week: 'Week 6', score: 88 },
-];
-
-const recentActivities = [
-  { id: 1, title: 'Completed React Fundamentals', type: 'lesson', time: '2 hours ago' },
-  { id: 2, title: 'JavaScript Assessment', type: 'assessment', time: '1 day ago', score: 85 },
-  { id: 3, title: 'CSS Grid Module', type: 'lesson', time: '2 days ago' },
-];
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import API from "../../api/axios";
 
 export function DashboardPage() {
+
+  const [user, setUser] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
+
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const u = localStorage.getItem("user");
+    if (u) setUser(JSON.parse(u));
+
+    fetchAnalysis();
+  }, []);
+
+  // 🔥 FETCH AI RESULT
+  const fetchAnalysis = async () => {
+    try {
+      const res = await API.get("/resume");
+      setAnalysis(res.data);
+    } catch (err) {
+      console.error("No resume analysis yet");
+    }
+  };
+
+  // 🔥 LEVEL COLOR
+  const getLevelColor = (level: string) => {
+    if (level === "Beginner") return "bg-red-500";
+    if (level === "Intermediate") return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Welcome Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Ready to level up, Alex? 🚀</h2>
-              <p className="text-blue-100 text-lg">
-                You're making great progress! Keep up the momentum.
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/app/role-recommendation')}
-              className="flex items-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              Get AI Recommendations
-            </Button>
+    <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
+
+      {/* 🔥 Welcome */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white p-8 rounded-3xl shadow-lg">
+        <h2 className="text-3xl font-bold">
+          Welcome back, {user?.name || "User"} 👋
+        </h2>
+        <p className="mt-2 text-sm opacity-90">
+          Your AI-powered career journey starts here 🚀
+        </p>
+      </div>
+
+      {/* 🔥 AI PERFORMANCE */}
+      {analysis && (
+        <div className="bg-white p-6 rounded-2xl shadow-md space-y-4">
+
+          <h3 className="text-lg font-semibold">
+            Your AI Performance
+          </h3>
+
+          {/* SCORE */}
+          <div className="flex justify-between">
+            <span>Score</span>
+            <span className="text-xl font-bold text-indigo-600">
+              {analysis.score}/100
+            </span>
           </div>
-        </Card>
-      </motion.div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <span className="text-sm text-green-600 dark:text-green-400 font-semibold">+12%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">68%</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Overall Progress</p>
-          </Card>
-        </motion.div>
+          {/* PROGRESS BAR */}
+          <div className="w-full bg-gray-200 h-3 rounded-full">
+            <div
+              className="bg-indigo-600 h-3 rounded-full"
+              style={{ width: `${analysis.score}%` }}
+            ></div>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">24</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Lessons Completed</p>
-          </Card>
-        </motion.div>
+          {/* LEVEL */}
+          <span className={`inline-block px-4 py-1 text-white rounded-full text-sm ${getLevelColor(analysis.level)}`}>
+            {analysis.level}
+          </span>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">8/12</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Assessments Passed</p>
-          </Card>
-        </motion.div>
+        </div>
+      )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">42h</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Time Invested</p>
-          </Card>
-        </motion.div>
-      </div>
+      {/* 🚀 MAIN FEATURES */}
+      <div>
+        <h3 className="text-xl font-semibold mb-4">
+          Start Your Preparation
+        </h3>
 
-      {/* Main Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card 
-            className="p-8 cursor-pointer" 
-            hoverable 
-            onClick={() => navigate('/app/role-selection')}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Role */}
+          <div
+            onClick={() => navigate("/app/role-selection")}
+            className="p-6 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white cursor-pointer shadow-lg hover:scale-105 transition"
           >
-            <div className="flex items-start justify-between mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Briefcase className="w-8 h-8 text-white" />
-              </div>
-              <ArrowRight className="w-6 h-6 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Job Role-Based Preparation</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Choose your target role and get a personalized learning roadmap with assessments, 
-              resources, and progress tracking.
+            <h4 className="text-xl font-bold">
+              Role-Based Preparation
+            </h4>
+            <p className="mt-2 text-sm opacity-90">
+              AI roadmap based on your level
             </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">Frontend</span>
-              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">Backend</span>
-              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">Data Science</span>
-              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">+8 more</span>
-            </div>
-          </Card>
-        </motion.div>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <Card 
-            className="p-8 cursor-pointer" 
-            hoverable 
-            onClick={() => navigate('/app/company-selection')}
+          {/* Company */}
+          <div
+            onClick={() => navigate("/app/company-selection")}
+            className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-teal-600 text-white cursor-pointer shadow-lg hover:scale-105 transition"
           >
-            <div className="flex items-start justify-between mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                <Building2 className="w-8 h-8 text-white" />
-              </div>
-              <ArrowRight className="w-6 h-6 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Company-Specific Preparation</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Prepare for your dream company with curated resources, mock tests, 
-              and interview questions from real candidates.
+            <h4 className="text-xl font-bold">
+              Company Preparation
+            </h4>
+            <p className="mt-2 text-sm opacity-90">
+              Mock tests & real interview patterns
             </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">Google</span>
-              <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">Amazon</span>
-              <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">Microsoft</span>
-              <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">+20 more</span>
-            </div>
-          </Card>
-        </motion.div>
+          </div>
+
+        </div>
       </div>
 
-      {/* Progress Chart and Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          className="lg:col-span-2"
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Your Progress</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">Weekly performance overview</p>
-              </div>
-              <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                <TrendingUp className="w-5 h-5" />
-                <span className="font-semibold">+15% this week</span>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="week" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '0.5rem'
-                  }} 
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="score" 
-                  stroke="url(#colorGradient)" 
-                  strokeWidth={3}
-                  dot={{ fill: '#8b5cf6', r: 4 }}
-                />
-                <defs>
-                  <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </motion.div>
+      {/* ⚡ QUICK ACTIONS */}
+      <div>
+        <h3 className="text-xl font-semibold mb-4">
+          Quick Actions
+        </h3>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
-          <Card className="p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    activity.type === 'lesson' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-green-100 dark:bg-green-900/30'
-                  }`}>
-                    {activity.type === 'lesson' ? (
-                      <BookOpen className={`w-5 h-5 ${activity.type === 'lesson' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`} />
-                    ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{activity.title}</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">{activity.time}</p>
-                    {activity.score && (
-                      <span className="inline-block mt-1 px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs font-semibold">
-                        Score: {activity.score}%
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button 
-              variant="ghost" 
-              className="w-full mt-4"
-              onClick={() => navigate('/app/notifications')}
-            >
-              View All Activity
-            </Button>
-          </Card>
-        </motion.div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          <QuickCard title="Assessment" onClick={() => navigate("/app/role-selection")} />
+          <QuickCard title="Roadmap" onClick={() => navigate("/app/learning-roadmap/1")} />
+          <QuickCard title="Mock Test" onClick={() => navigate("/app/company-selection")} />
+          <QuickCard title="Analytics" onClick={() => navigate("/app/performance-analysis/1")} />
+
+        </div>
       </div>
+
+    </div>
+  );
+}
+
+/* 🔥 Quick Card */
+function QuickCard({ title, onClick }: any) {
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white p-4 rounded-xl shadow hover:shadow-lg cursor-pointer text-center transition"
+    >
+      <h4 className="font-semibold">{title}</h4>
     </div>
   );
 }

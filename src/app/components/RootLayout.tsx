@@ -2,10 +2,10 @@ import { Outlet, useNavigate, useLocation } from 'react-router';
 import { 
   LayoutDashboard, 
   Map, 
+  Bell,
   ClipboardCheck, 
   User, 
   Settings, 
-  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -13,14 +13,17 @@ import {
   Moon,
   Sun
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTheme } from './ThemeProvider';
+import { getUser, logout } from '../../utils/auth';
+
 
 const navigation = [
   { name: 'Dashboard', href: '/app', icon: LayoutDashboard },
   { name: 'Roadmap', href: '/app/learning-roadmap/frontend', icon: Map },
   { name: 'Assessments', href: '/app/role-selection', icon: ClipboardCheck },
+  { name: 'Notifications', href: '/app/notifications', icon: Bell },
   { name: 'Profile', href: '/app/profile', icon: User },
   { name: 'Settings', href: '/app/settings', icon: Settings },
 ];
@@ -32,9 +35,14 @@ export function RootLayout() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount] = useState(3);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    setUser(getUser());
+  }, []);
 
   const handleLogout = () => {
-    navigate('/');
+    logout();
   };
 
   return (
@@ -118,7 +126,7 @@ export function RootLayout() {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, Alex! 👋</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, {user?.name || 'User'}! 👋</h1>
             </div>
             
             <div className="flex items-center gap-4">
@@ -155,11 +163,11 @@ export function RootLayout() {
                   className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                    <span className="text-white font-semibold">A</span>
+                    <span className="text-white font-semibold">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                   </div>
                   <div className="text-left hidden sm:block">
-                    <p className="font-semibold text-gray-900 dark:text-white">Alex Johnson</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">alex@example.com</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{user?.name || 'User'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email || 'email@example.com'}</p>
                   </div>
                   <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>

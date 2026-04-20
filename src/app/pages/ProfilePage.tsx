@@ -1,190 +1,129 @@
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import { motion } from 'motion/react';
-import { User, Mail, MapPin, Briefcase, Calendar, Award } from 'lucide-react';
+import { useState } from "react";
+import API from "../../api/axios";
 
 export function ProfilePage() {
+
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleFileChange = (e: any) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setLoading(true);
+
+      const res = await API.post("/resume/upload", formData);
+
+      // ✅ IMPORTANT (backend returns directly)
+      setResult(res.data);
+
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔥 LEVEL COLOR FUNCTION
+  const getLevelColor = (level: string) => {
+    if (level === "Beginner") return "bg-red-500";
+    if (level === "Intermediate") return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Profile</h1>
-        <p className="text-gray-600 text-lg">Manage your account information</p>
-      </motion.div>
+    <div className="p-6 bg-gray-50 min-h-screen space-y-6">
 
-      {/* Profile Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <Card className="p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-bold text-4xl">A</span>
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Alex Johnson</h2>
-              <p className="text-gray-600 mb-4">alex@example.com</p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-                  Frontend Developer
-                </span>
-                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                  Intermediate Level
-                </span>
-              </div>
-            </div>
-            <Button variant="outline">Edit Profile</Button>
+      {/* HEADER */}
+      <div>
+        <h2 className="text-3xl font-bold">Profile</h2>
+        <p className="text-gray-500 text-sm">
+          Upload your resume and get AI feedback 🚀
+        </p>
+      </div>
+
+      {/* UPLOAD CARD */}
+      <div className="bg-white p-6 rounded-2xl shadow-md space-y-4">
+
+        <h3 className="text-xl font-semibold">
+          Resume Analyzer 🤖
+        </h3>
+
+        {/* FILE INPUT */}
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx"
+          onChange={handleFileChange}
+          className="border p-2 rounded w-full"
+        />
+
+        {/* BUTTON */}
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition disabled:opacity-50"
+        >
+          {loading ? "Analyzing..." : "Upload & Analyze"}
+        </button>
+
+      </div>
+
+      {/* RESULT */}
+      {result && (
+        <div className="bg-white p-6 rounded-2xl shadow-md space-y-5">
+
+          <h3 className="text-xl font-semibold">Analysis Result</h3>
+
+          {/* SCORE */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Score</span>
+            <span className="text-2xl font-bold text-indigo-600">
+              {result.score}/100
+            </span>
           </div>
-        </Card>
-      </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-      >
-        <Card className="p-6 text-center">
-          <Award className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">24</h3>
-          <p className="text-gray-600 text-sm">Courses Completed</p>
-        </Card>
-        
-        <Card className="p-6 text-center">
-          <Briefcase className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">8</h3>
-          <p className="text-gray-600 text-sm">Assessments Passed</p>
-        </Card>
-        
-        <Card className="p-6 text-center">
-          <Calendar className="w-8 h-8 text-green-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">56</h3>
-          <p className="text-gray-600 text-sm">Days Active</p>
-        </Card>
-        
-        <Card className="p-6 text-center">
-          <Award className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">2</h3>
-          <p className="text-gray-600 text-sm">Certificates</p>
-        </Card>
-      </motion.div>
-
-      {/* Personal Information */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
-        <Card className="p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h3>
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="First Name"
-                value="Alex"
-                readOnly
-              />
-              <Input
-                label="Last Name"
-                value="Johnson"
-                readOnly
-              />
-            </div>
-            
-            <Input
-              label="Email"
-              type="email"
-              value="alex@example.com"
-              readOnly
-            />
-            
-            <Input
-              label="Phone"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-            />
-            
-            <Input
-              label="Location"
-              placeholder="San Francisco, CA"
-            />
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bio
-              </label>
-              <textarea
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none"
-                rows={4}
-                placeholder="Tell us about yourself..."
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <Button type="submit">Save Changes</Button>
-              <Button type="button" variant="outline">Cancel</Button>
-            </div>
-          </form>
-        </Card>
-      </motion.div>
-
-      {/* Skills & Interests */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <Card className="p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Skills & Interests</h3>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Technical Skills
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML', 'Node.js', 'Git'].map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                <button className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors">
-                  + Add Skill
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Interests
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {['Web Development', 'UI/UX Design', 'Mobile Apps', 'Open Source'].map((interest) => (
-                  <span
-                    key={interest}
-                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-medium"
-                  >
-                    {interest}
-                  </span>
-                ))}
-                <button className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-500 hover:text-purple-600 transition-colors">
-                  + Add Interest
-                </button>
-              </div>
-            </div>
+          {/* PROGRESS BAR */}
+          <div className="w-full bg-gray-200 h-3 rounded-full">
+            <div
+              className="bg-indigo-600 h-3 rounded-full"
+              style={{ width: `${result.score}%` }}
+            ></div>
           </div>
-        </Card>
-      </motion.div>
+
+          {/* 🔥 LEVEL BADGE */}
+          <div>
+            <span
+              className={`inline-block px-4 py-1 text-white rounded-full text-sm ${getLevelColor(result.level)}`}
+            >
+              {result.level}
+            </span>
+          </div>
+
+          {/* SUGGESTIONS */}
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-1">
+              Suggestions
+            </h4>
+            <p className="text-sm text-gray-600 whitespace-pre-line">
+              {result.suggestions}
+            </p>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 }
